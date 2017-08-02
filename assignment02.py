@@ -5,7 +5,6 @@ import argparse
 import cv2
 import numpy as np
 
-import util
 
 def main():
     parser = argparse.ArgumentParser(
@@ -25,35 +24,40 @@ def main():
     if img is None:
         print('Image not found.')
         return
-    cv2.imshow('original', util.upSampling(img, args.width, args.height))
-    chromaSubsampling = SUBSAMPLING_TYPES[args.subsampling]
-    result = chromaSubsampling(img)
-    result = util.upSampling(result, args.width, args.height)
-    cv2.imshow('chromaSubsampling' + args.subsampling, result)
+    cv2.imshow('original', up_sampling(img, args.width, args.height))
+    chroma_subsampling = SUBSAMPLING_TYPES[args.subsampling]
+    result = chroma_subsampling(img)
+    result = up_sampling(result, args.width, args.height)
+    cv2.imshow('chroma_subsampling' + args.subsampling, result)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-def chromaSubsamplingFactory(a, b):
+
+def chroma_subsampling_factory(a, b):
     """Creates the subsampling function."""
-    def _subsamplingChannel(channel):
+    
+    def _subsampling_channel(channel):
         if a == 1 and b == 1:
             return channel
         channel = channel[::a, ::b]
         return channel
+    
     def _subsampling(img):
         ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
         (y, cr, cb) = cv2.split(ycrcb)
         cv2.imshow('ycrcb', np.hstack((y, cr, cb)))
-        cr = _subsamplingChannel(cr)
-        cb = _subsamplingChannel(cb)
+        cr = _subsampling_channel(cr)
+        cb = _subsampling_channel(cb)
         cv2.imshow('y_result', y)
         cv2.imshow('cr_result', cr)
         cv2.imshow('cb_result', cb)
-        result = decodeSampled(y, cr, cb, a, b)
+        result = decode_sampled(y, cr, cb, a, b)
         return cv2.cvtColor(result, cv2.COLOR_YCrCb2BGR)
+    
     return _subsampling
 
-def decodeSampled(y, cr, cb, a, b):
+
+def decode_sampled(y, cr, cb, a, b):
     """Decodes the sampled image back to its full size."""
     def _decoding(channel):
         channel = np.repeat(channel, b, axis=1)
@@ -74,14 +78,23 @@ def decodeSampled(y, cr, cb, a, b):
     cb = _decoding(cb)
     return cv2.merge((y, cr, cb))
 
+
 SUBSAMPLING_TYPES = {
-    '444': chromaSubsamplingFactory(1, 1),
-    '440': chromaSubsamplingFactory(2, 1),
-    '422': chromaSubsamplingFactory(1, 2),
-    '420': chromaSubsamplingFactory(2, 2),
-    '411': chromaSubsamplingFactory(1, 4),
-    '410': chromaSubsamplingFactory(2, 4),
+    '444': chroma_subsampling_factory(1, 1),
+    '440': chroma_subsampling_factory(2, 1),
+    '422': chroma_subsampling_factory(1, 2),
+    '420': chroma_subsampling_factory(2, 2),
+    '411': chroma_subsampling_factory(1, 4),
+    '410': chroma_subsampling_factory(2, 4),
 }
+
+
+def up_sampling(image, new_width, new_height):
+    """Up sampling image by repeat."""
+    (height, width) = image.shape[:2]
+    scale_x = int(new_width / width)
+    scale_y = int(new_height / height)
+    return np.repeat(np.repeat(image, scale_x, axis=1), scale_y, axis=0)
 
 if __name__ == '__main__':
     main()

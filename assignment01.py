@@ -5,7 +5,6 @@ import argparse
 import cv2
 import numpy as np
 
-import util
 
 def main():
     """Entry point."""
@@ -23,10 +22,11 @@ def main():
     args = parser.parse_args()
     (tl, tr, bl, br) = gen_colors()
     img = gen_image(args.rows, args.cols, tl, tr, br, bl)
-    img = util.upSampling(img, args.width, args.height)
+    img = up_sampling(img, args.width, args.height)
     cv2.imshow('image', img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
 
 def gen_colors():
     """Generate four random BGR colors."""
@@ -34,13 +34,15 @@ def gen_colors():
     tr = np.random.randint(0, 255, 3)
     bl = np.random.randint(0, 255, 3)
     br = np.random.randint(0, 255, 3)
-    return (tl, tr, bl, br)
+    return tl, tr, bl, br
+
 
 def gen_image(rows, cols, color_tl, color_tr, color_br, color_bl):
     """Creates game image (optimized)."""
     colors = np.array([color_tl, color_tr, color_br, color_bl])
     w_matrix = get_weight_matrix(rows, cols)
     return np.uint8(np.matmul(w_matrix, colors))
+
 
 def get_weight_matrix(rows, cols):
     """Calculates the weights' matrix."""
@@ -56,6 +58,14 @@ def get_weight_matrix(rows, cols):
     # top left weight matrix
     tlw = np.fliplr(trw)
     return np.dstack((tlw, trw, brw, blw))
+
+
+def up_sampling(image, new_width, new_height):
+    """Up sampling image by repeat."""
+    (height, width) = image.shape[:2]
+    scale_x = int(new_width / width)
+    scale_y = int(new_height / height)
+    return np.repeat(np.repeat(image, scale_x, axis=1), scale_y, axis=0)
 
 if __name__ == '__main__':
     main()
