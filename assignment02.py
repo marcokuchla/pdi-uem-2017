@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """Assignment 02: Chroma Subsampling."""
 import argparse
 
@@ -39,19 +39,18 @@ def chroma_subsampling_factory(a, b):
     def _subsampling_channel(channel):
         if a == 1 and b == 1:
             return channel
-        channel = channel[::a, ::b]
-        return channel
+        return channel[::a, ::b]
     
     def _subsampling(img):
         ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
         (y, cr, cb) = cv2.split(ycrcb)
         cv2.imshow('ycrcb', np.hstack((y, cr, cb)))
-        cr = _subsampling_channel(cr)
-        cb = _subsampling_channel(cb)
+        crs = _subsampling_channel(cr)
+        cbs = _subsampling_channel(cb)
         cv2.imshow('y_result', y)
-        cv2.imshow('cr_result', cr)
-        cv2.imshow('cb_result', cb)
-        result = decode_sampled(y, cr, cb, a, b)
+        cv2.imshow('cr_result', crs)
+        cv2.imshow('cb_result', cbs)
+        result = decode_sampled(y, crs, cbs, a, b)
         return cv2.cvtColor(result, cv2.COLOR_YCrCb2BGR)
     
     return _subsampling

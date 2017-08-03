@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """Assignment 01: 'I love Hue' game's grid."""
 import argparse
 
