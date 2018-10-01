@@ -18,10 +18,10 @@ Install OpenCV dependency into venv:
 Execute scripts:
 ---------------
 
-`(myvenv) $ python3 generate-hue-tyle.py`
+`(myvenv) $ python3 generate-hue-tyle.py --help`
 
-`(myvenv) $ python3 chroma-subsampling.py`
+`(myvenv) $ python3 chroma-subsampling.py --help`
 
-`(myvenv) $ python3 histogram-equalization.py`
+`(myvenv) $ python3 histogram-equalization.py --help`
 
 To quit the execution just press 'q'.
