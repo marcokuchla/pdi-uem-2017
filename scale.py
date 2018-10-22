@@ -16,18 +16,8 @@ def main():
   input_image = cv2.imread(args.input_image_filename)
   if input_image is None:
     error('Image not found!')
-  if args.scale_x <= 0 or args.scale_y <= 0:
-    error('Scales must be positive!')
-  print('Input image shape:', input_image.shape)
-  scales = np.array([args.scale_x, args.scale_y, 1])
-  output_shape = np.int32(scales * input_image.shape)
-  print('Output image shape:', output_shape)
-  rows = np.arange(output_shape[0])
-  cols = np.arange(output_shape[1])
-  rows_indexes, cols_indexes = np.meshgrid(cols, rows)
-  rows_mapping = np.int32(np.floor(rows_indexes / scales[0]))
-  cols_mapping = np.int32(np.floor(cols_indexes / scales[1]))
-  output_image = input_image[cols_mapping, rows_mapping]
+  
+  output_image = scale(input_image, args.scale_x, args.scale_y)
   cv2.imshow('input', input_image)
   cv2.imshow('output', output_image)
   cv2.waitKey(0)
@@ -36,6 +26,24 @@ def main():
 def error(msg):
   print(msg)
   exit(1)
+
+def scale(image, scale_x, scale_y):
+  if scale_x <= 0 or scale_y <= 0:
+    error('Scales must be positive!')
+  if scale_x == 1 and scale_y == 1:
+    return image
+  (in_height, in_width) = image.shape[:2]
+  out_height = np.int32(scale_y * in_height)
+  out_width = np.int32(scale_x * in_width)
+  print('Input image size (WxH):', (in_width, in_height))
+  print('Output image size (WxH):', (out_width, out_height))
+  rows = np.arange(out_height)
+  cols = np.arange(out_width)
+  cols_indexes, rows_indexes = np.meshgrid(cols, rows)
+  rows_mapping = np.int32(rows_indexes / scale_y)
+  cols_mapping = np.int32(cols_indexes / scale_x)
+  output_image = image[rows_mapping, cols_mapping]
+  return output_image
 
 if __name__=='__main__':
   main()
